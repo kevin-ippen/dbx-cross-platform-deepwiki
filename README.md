@@ -1,6 +1,6 @@
 # dbx-cross-platform-deepwiki
 
-A persistent, file-based memory system that lets **any agent** (Claude Code, Genie Code, GitHub Copilot, OpenAI Codex, or a custom agent) pick up exactly where the last session left off — even on a different platform.
+A persistent, file-based memory system that lets **any agent** (Claude Code, Genie Code, GitHub Copilot, Cursor, or a custom agent) pick up exactly where the last session left off — even on a different platform.
 
 ## The problem it solves
 
@@ -22,10 +22,12 @@ DeepWiki is that layer. It's a folder of structured Markdown files that any agen
       NORTH_STAR.md     ← the why (human-authored)
       planning/         ← goals, phases, decisions, open questions
       memory/
-        changelog.md    ← append-only session log
-        semantic/       ← schemas, gotchas, patterns (compiled from changelog)
+        episodic/       ← raw session logs (source material)
+        changelog.md    ← structured session summary (pre-flight read)
+        semantic/       ← compiled facts: schemas, gotchas, patterns
+      context/          ← codebase map, DAB manifest
   agents/               ← reusable subagent prompt templates
-  mcp-server/           ← optional FastAPI MCP server for Genie Code / DBSQL Assistant
+  mcp-server/           ← optional FastAPI MCP server for Genie Code
 ```
 
 **Session start ritual** (any platform):
@@ -34,18 +36,19 @@ DeepWiki is that layer. It's a folder of structured Markdown files that any agen
 3. State your plan before acting
 
 **Session end ritual** (any platform):
-1. Append to `projects/{name}/memory/changelog.md`
-2. If switching platforms, write `agents/session_handoff.md`
+1. Write `memory/episodic/YYYY-MM-DD_{platform}.md` — verbose raw log
+2. Append to `projects/{name}/memory/changelog.md` — structured summary
+3. If switching platforms, write `agents/session_handoff.md`
 
 ## Platform integration
 
 | Platform | How to load DeepWiki |
 |----------|----------------------|
-| **Claude Code** | Add `Read .deepwiki/workspace/AGENT_PROTOCOL.md` to CLAUDE.md or project prompt |
-| **Genie Code / DBSQL Assistant** | Deploy the MCP server (see `mcp-server/`) and register it |
-| **GitHub Copilot** | Add `#file:.deepwiki/workspace/AGENT_PROTOCOL.md` to your Copilot instructions |
-| **OpenAI Codex / custom agents** | Include AGENT_PROTOCOL.md in the system prompt; pass project slices as context |
-| **Cursor** | Reference in `.cursorrules` |
+| **Claude Code** | Add `Read .deepwiki/workspace/AGENT_PROTOCOL.md` to `CLAUDE.md` |
+| **Genie Code / DBSQL Assistant** | Deploy the MCP server (see `mcp-server/`) and register it as a custom MCP |
+| **GitHub Copilot** | Add `#file:.deepwiki/workspace/AGENT_PROTOCOL.md` to `.github/copilot-instructions.md` |
+| **Cursor** | Reference `AGENT_PROTOCOL.md` in `.cursorrules` |
+| **Custom agents** | Include `AGENT_PROTOCOL.md` in the system prompt; inject project slices as context |
 
 ### UC Volume sync (Databricks)
 
@@ -65,11 +68,12 @@ The MCP server reads from the volume — no sync scripts needed.
 |------|---------|------------|------|
 | **Vision** | `NORTH_STAR.md` | Human only | When the goal changes |
 | **Priorities** | `planning/goals.md`, `planning/phases.md` | Human only | When priorities shift |
-| **Raw log** | `memory/changelog.md` | Agent (mandatory) | Every session that changes anything |
+| **Architecture** | `planning/decisions.md` | Agent (human-approved) | When architectural choices are made |
+| **Episodic** | `memory/episodic/{date}_{platform}.md` | Agent (mandatory) | Every session — verbose raw log |
+| **Structured log** | `memory/changelog.md` | Agent (mandatory) | Every session — formatted summary for pre-flight reads |
 | **Compiled facts** | `memory/semantic/*.md` | Agent (compilation task) | Every 3-5 sessions or at phase boundaries |
-| **Architecture** | `planning/decisions.md` | Agent (with human approval) | When architectural choices are made |
 
-The key insight: agents write raw logs (cheap, low judgment), and a separate compilation pass distills those logs into clean semantic memory. This keeps the live-session write cost low while keeping the read quality high.
+The key insight: episodic logs capture everything cheaply; compilation distills them into dense semantic memory that agents load in pre-flight. Agents read the compiled tier, not the raw logs. This keeps pre-flight token cost low (~3,500 tokens) while keeping the full history available for compilation and auditing.
 
 ## Getting started
 

@@ -2,28 +2,38 @@
 
 ## What you're setting up
 
-A `.deepwiki/` folder in your workspace that persists agent memory across sessions and platforms. Any agent — Claude Code, Genie Code, Copilot, Codex — reads the same files and follows the same protocol.
+A `.deepwiki/` folder in your workspace that persists agent memory across sessions and platforms. Any agent — Claude Code, Genie Code, Copilot, Cursor — reads the same files and follows the same protocol.
 
-## Option A: Local only (Claude Code / Copilot / Codex)
+## Option A: Local only (Claude Code / Copilot / Cursor)
 
 No Databricks required. The `.deepwiki/` folder lives alongside your project files.
 
 ```bash
-# 1. Scaffold the structure
-chmod +x bootstrap.sh
-./bootstrap.sh --workspace my-workspace --project my-first-project
+# Clone the template repo and run bootstrap from your project root
+git clone https://github.com/kevin-ippen/dbx-cross-platform-deepwiki /tmp/deepwiki-template
+cd /path/to/your/project
 
-# 2. Fill in the workspace context
-#    Open workspace/context/stack.md → add your Databricks profiles and warehouse IDs
-#    Open workspace/PROJECT_INDEX.md → describe your project
+chmod +x /tmp/deepwiki-template/bootstrap.sh
+/tmp/deepwiki-template/bootstrap.sh \
+  --workspace my-workspace \
+  --project my-first-project \
+  --output .
 
-# 3. Fill in the project context
-#    Open projects/my-first-project/NORTH_STAR.md → write your goal
-#    Open projects/my-first-project/planning/goals.md → list your current priorities
+# This creates .deepwiki/ in your project root.
 
-# 4. Wire up Claude Code (optional)
-#    Add this line to your CLAUDE.md:
-echo 'Read .deepwiki/workspace/AGENT_PROTOCOL.md at session start.' >> CLAUDE.md
+# Fill in workspace context
+#   .deepwiki/workspace/context/stack.md → your Databricks profiles and warehouse IDs
+#   .deepwiki/workspace/PROJECT_INDEX.md → describe your project
+
+# Fill in project context (human-owned files — don't let the agent write these)
+#   .deepwiki/projects/my-first-project/NORTH_STAR.md → your goal
+#   .deepwiki/projects/my-first-project/planning/goals.md → current priorities
+#   .deepwiki/projects/my-first-project/planning/phases.md → execution order
+
+# Wire up Claude Code
+echo 'At session start: Read .deepwiki/workspace/AGENT_PROTOCOL.md and follow the pre-flight checklist.' >> CLAUDE.md
+
+# Then run BOOTSTRAP.md prompt sequence to populate the rest
 ```
 
 ## Option B: UC Volume (Genie Code + multi-platform sync)
@@ -78,7 +88,9 @@ Add to your `CLAUDE.md` (project or global):
 ## DeepWiki Memory
 
 At session start: Read `.deepwiki/workspace/AGENT_PROTOCOL.md` and follow the pre-flight checklist.
-At session end: Append to `projects/{project-name}/memory/changelog.md`.
+At session end:
+1. Write a verbose episodic log to `projects/{project-name}/memory/episodic/YYYY-MM-DD_claude-code.md`
+2. Append a structured entry to `projects/{project-name}/memory/changelog.md`
 ```
 
 ### Genie Code / DBSQL Assistant
@@ -99,12 +111,14 @@ Follow the pre-flight checklist before making any code changes.
 Add to `.cursorrules`:
 
 ```
-At session start: Read .deepwiki/workspace/AGENT_PROTOCOL.md.
+At session start: Read .deepwiki/workspace/AGENT_PROTOCOL.md and follow the pre-flight checklist.
 Before touching any schema: check .deepwiki/projects/{name}/memory/semantic/schemas.md.
-After every session that changes anything: append to .deepwiki/projects/{name}/memory/changelog.md.
+At session end:
+- Write a verbose episodic log to .deepwiki/projects/{name}/memory/episodic/YYYY-MM-DD_cursor.md
+- Append a structured entry to .deepwiki/projects/{name}/memory/changelog.md
 ```
 
-### OpenAI Codex / Custom Agents
+### Custom Agents
 
 Include `AGENT_PROTOCOL.md` in the system prompt. For each task, inject the relevant project slice (schemas, gotchas, changelog) as user context.
 
@@ -115,15 +129,16 @@ Include `AGENT_PROTOCOL.md` in the system prompt. For each task, inject the rele
 | `NORTH_STAR.md` | Humans only |
 | `planning/goals.md`, `planning/phases.md` | Humans only |
 | `planning/decisions.md` | Agents propose; humans approve |
+| `memory/episodic/*.md` | Agents write; humans never edit; archive after 30 days |
 | `memory/changelog.md` | Agents write; humans never edit |
-| `memory/semantic/*.md` | Agents compile from changelog every 3-5 sessions |
+| `memory/semantic/*.md` | Agents compile from episodic logs every 3-5 sessions |
 | `workspace/memory/semantic/*.md` | Same; promoted from project-level |
 | `context/*.md` | Humans write initially; agents update when infra changes |
 
 ## Maintenance
 
 **Every 3-5 sessions:** Ask your agent to run the memory compiler:
-> "Compile the last 5 changelog entries into updated semantic memory. Use the template in `agents/delegation_templates/memory_compiler.md`."
+> "Compile the episodic logs in `memory/episodic/` since [last compile date] into updated semantic memory. Use the template in `agents/delegation_templates/memory_compiler.md`."
 
 **At phase boundaries:** Run the compiler, update `planning/goals.md` and `planning/phases.md`, then start fresh.
 
