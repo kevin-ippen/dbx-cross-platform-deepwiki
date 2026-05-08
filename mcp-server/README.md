@@ -1,6 +1,6 @@
 # DeepWiki MCP Server
 
-FastAPI server that exposes DeepWiki as MCP tools for Genie Code and the Databricks AI Assistant.
+MCP server that exposes DeepWiki as tools for Genie Code and the Databricks AI Assistant. Uses the MCP Python SDK with Streamable HTTP transport — Genie Code can discover and invoke tools via JSON-RPC without any custom configuration.
 
 ## Tools
 
@@ -8,8 +8,8 @@ FastAPI server that exposes DeepWiki as MCP tools for Genie Code and the Databri
 |------|---------|---------|
 | `deepwiki_preflight` | Load all session context for a project in one call | `{"project": "my-project"}` |
 | `deepwiki_read` | Read a specific file | `{"project": "my-project", "file": "memory/semantic/schemas.md"}` |
-| `deepwiki_search` | Full-text search across all files | `{"query": "price model", "max_results": 5}` |
-| `deepwiki_changelog` | Append a formatted changelog entry | `{"project": "my-project", "changes": ["Added table X"], "warnings": []}` |
+| `deepwiki_search` | Full-text search across all files | `{"query": "price model"}` |
+| `deepwiki_changelog` | Append a formatted changelog entry | `{"project": "my-project", "changes": ["Added table X"]}` |
 | `deepwiki_list` | List files in a project | `{"project": "my-project"}` or `{}` for project index |
 
 ## Setup
@@ -23,14 +23,13 @@ CREATE VOLUME {catalog}.{schema}.deepwiki;
 ### 2. Upload the workspace/ and projects/ structure
 
 ```bash
-# Copy workspace template files to the volume
-databricks fs cp -r workspace/ dbfs:/Volumes/{catalog}/{schema}/deepwiki/workspace/
-
-# Create your first project directory
-databricks fs mkdirs dbfs:/Volumes/{catalog}/{schema}/deepwiki/projects/my-project/
+databricks fs cp -r workspace/ /Volumes/{catalog}/{schema}/deepwiki/workspace/ --recursive
+databricks fs cp -r projects/_template/ /Volumes/{catalog}/{schema}/deepwiki/projects/my-project/ --recursive
 ```
 
 Or use the Databricks UI: Data → Volumes → browse to your volume → Upload.
+
+Grant your app's service principal `READ VOLUME` and `WRITE VOLUME` on the volume (UC grants, not app resources).
 
 ### 3. Configure the server
 
@@ -43,23 +42,21 @@ env:
 
 ### 4. Deploy as a Databricks App
 
+The app name **must start with `mcp-`** — Genie Code uses this prefix to identify MCP servers.
+
 ```bash
 cd mcp-server/
-databricks apps deploy deepwiki-mcp --source-code-path .
+databricks apps deploy mcp-deepwiki --source-code-path .
 ```
 
-### 5. Register as MCP Server in Genie Code
+### 5. Register in Genie Code
 
-After deploying, add to `.assistant/.mcp_servers.json` in your workspace:
-```json
-{
-  "name": "DeepWiki",
-  "url": "https://deepwiki-mcp-{workspace-id}.{cloud}.databricksapps.com",
-  "isToggledOn": true,
-  "disabledTools": [],
-  "mcpType": "custom"
-}
-```
+1. Open Genie Code settings
+2. Navigate to **MCP Servers**
+3. Click **Add MCP Server** → select **Databricks App**
+4. Choose `mcp-deepwiki` from the app list
+
+Genie Code will auto-discover all tools at the `/mcp` endpoint.
 
 ## Local Testing
 
@@ -67,13 +64,12 @@ After deploying, add to `.assistant/.mcp_servers.json` in your workspace:
 pip install -r requirements.txt
 
 # Point at a local directory instead of a UC Volume
-DEEPWIKI_VOLUME=/path/to/your/local/deepwiki python deepwiki_mcp.py
+DEEPWIKI_VOLUME=/path/to/your/local/.deepwiki uvicorn deepwiki_mcp:app --port 8100
 
-# Test it
-curl http://localhost:8100/health
-curl -X POST http://localhost:8100/tools/deepwiki_list \
+# Send a JSON-RPC initialize request
+curl -X POST http://localhost:8100/mcp \
   -H "Content-Type: application/json" \
-  -d '{}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0"}}}'
 ```
 
 ## How Genie Code Uses It
@@ -87,7 +83,7 @@ Genie: [calls deepwiki_preflight(project="my-project")]
 ```
 
 ```
-User: "I just added a new column to events table"  
+User: "I just added a new column to events table"
 Genie: [calls deepwiki_changelog(project="my-project",
          changes=["Added column user_id to gold.events"],
          schema_changes=["gold.events: added user_id (STRING)"])]

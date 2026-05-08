@@ -6,10 +6,6 @@ command:
   - --port
   - "8100"
 
-resources:
-  - name: deepwiki-volume
-    sql_warehouse:
-      permission: CAN_USE
 
 env:
   - name: DEEPWIKI_VOLUME
