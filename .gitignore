@@ -1,0 +1,10 @@
+# OS
+.DS_Store
+
+# Local testing — don't commit personal volume paths or actual session data
+mcp-server/__pycache__/
+mcp-server/*.pyc
+mcp-server/.venv/
+
+# If you run bootstrap.sh in this repo for testing
+.deepwiki/

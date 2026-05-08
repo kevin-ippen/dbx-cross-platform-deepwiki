@@ -1,0 +1,16 @@
+command:
+  - uvicorn
+  - deepwiki_mcp:app
+  - --host
+  - "0.0.0.0"
+  - --port
+  - "8100"
+
+resources:
+  - name: deepwiki-volume
+    sql_warehouse:
+      permission: CAN_USE
+
+env:
+  - name: DEEPWIKI_VOLUME
+    value: /Volumes/{your-catalog}/{your-schema}/{your-volume}
