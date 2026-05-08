@@ -87,7 +87,8 @@ chmod +x .deepwiki-template/bootstrap.sh
 #    - projects/my-first-project/NORTH_STAR.md → your goal
 ```
 
-See [SETUP.md](SETUP.md) for the full walkthrough.
+See [SETUP.md](SETUP.md) for the platform wiring walkthrough.
+See [BOOTSTRAP.md](BOOTSTRAP.md) for the 7-prompt sequence to populate your first project.
 
 ## MCP server (for Genie Code)
 

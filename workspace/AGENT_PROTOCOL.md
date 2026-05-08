@@ -23,6 +23,8 @@ Only read these if relevant to the current task:
 - Touching schemas → `context/catalog_map.md` (full catalog topology)
 - Using external APIs → `context/integrations.md` (auth, endpoints, gotchas)
 - Need infrastructure details → `context/stack.md` (workspaces, warehouses, FMAPI endpoints)
+- Touching code structure → `context/codebase_map.md` (what files exist, what they do)
+- Deploying or running jobs → `context/dab_manifest.md` (bundle structure, job IDs)
 - Unfamiliar term → `memory/semantic/domain_glossary.md`
 
 ### 4. If Working in a Specific Project
@@ -50,7 +52,14 @@ Before writing any code or making any changes, state:
 - Periodically re-check: "Is what I'm doing still serving the active goal?"
 
 ### 7. Session Close (Before Ending)
-Append to `projects/{project-name}/memory/changelog.md` using this format:
+Write two artifacts before ending:
+
+**A. Episodic log** — `projects/{project-name}/memory/episodic/YYYY-MM-DD_{platform}.md`
+Verbose, unedited. What you tried, what surprised you, what's uncertain.
+See `projects/_template/memory/episodic/README.md` for format.
+
+**B. Changelog entry** — append to `projects/{project-name}/memory/changelog.md`
+Structured summary using this format:
 
 ```markdown
 ## YYYY-MM-DD | [Agent Platform] | [Phase] - [Brief Description]
@@ -82,8 +91,11 @@ If switching platforms next session, also write `agents/session_handoff.md`.
 | `NORTH_STAR.md` | Human only | When vision changes |
 | `goals.md`, `phases.md` | Human only | When priorities shift |
 | `decisions.md` | Agent (with human approval) | When architectural choices are made |
-| `changelog.md` | Agent (mandatory) | Every session that changes anything |
+| `episodic/{date}_{platform}.md` | Agent (mandatory) | Every session — raw verbose log |
+| `changelog.md` | Agent (mandatory) | Every session — structured summary |
 | `semantic/*.md` | Agent (compilation task) | Every 3-5 sessions or at phase boundaries |
+
+**Episodic vs. changelog:** Write both at session end. The episodic log is verbose and unedited — the full record of what was tried and what was observed. The changelog entry is the structured summary that future agents read during pre-flight. Episodic logs are the source material for semantic memory compilation; they are never loaded during pre-flight.
 
 ## Subagent Rules
 
