@@ -58,7 +58,7 @@ databricks fs cp -r projects/_template/ \
 # 5. Deploy the MCP server (optional but recommended for Genie Code)
 cd mcp-server/
 # Edit app.yaml → set DEEPWIKI_VOLUME to /Volumes/{catalog}/{schema}/deepwiki
-databricks apps deploy deepwiki-mcp --source-code-path .
+databricks apps deploy mcp-deepwiki --source-code-path .
 
 # 6. Register MCP server in Genie Code
 #    See mcp-server/README.md for the .mcp_servers.json snippet
@@ -72,7 +72,7 @@ If you've deployed the MCP server, Claude Code can also call it via MCP instead 
 {
   "mcpServers": {
     "deepwiki": {
-      "url": "https://deepwiki-mcp-{workspace-id}.{cloud}.databricksapps.com"
+      "url": "https://mcp-deepwiki-{workspace-id}.{cloud}.databricksapps.com"
     }
   }
 }

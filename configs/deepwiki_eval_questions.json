@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "description": "Deterministic DeepWiki memory probes. Each probe checks whether the expected files contain enough evidence for a cold agent to recover the answer.",
+  "questions": [
+    {
+      "id": "north_star",
+      "question": "What is this project's purpose and success criteria?",
+      "expected_paths": ["NORTH_STAR.md"],
+      "keywords": ["success", "criteria", "agent", "Databricks"]
+    },
+    {
+      "id": "active_goals",
+      "question": "What are the active goals or priorities?",
+      "expected_paths": ["planning/goals.md"],
+      "keywords": ["current", "phase", "goal"]
+    },
+    {
+      "id": "phase_plan",
+      "question": "What phase is active and what comes next?",
+      "expected_paths": ["planning/phases.md"],
+      "keywords": ["phase", "completed"]
+    },
+    {
+      "id": "recent_changes",
+      "question": "What changed in the last few sessions?",
+      "expected_paths": ["memory/changelog.md"],
+      "keywords": ["changes", "decisions", "warnings"]
+    },
+    {
+      "id": "schema_state",
+      "question": "What schemas, tables, APIs, or resources should the agent know before making data changes?",
+      "expected_paths": ["memory/semantic/schemas.md"],
+      "keywords": ["schema", "table"]
+    },
+    {
+      "id": "known_gotchas",
+      "question": "What traps should the next agent avoid?",
+      "expected_paths": ["memory/semantic/gotchas.md"],
+      "keywords": ["never", "avoid", "warning", "gotcha"]
+    },
+    {
+      "id": "handoff_readiness",
+      "question": "Can a different agent resume in the middle of work without asking the user what happened?",
+      "expected_paths": ["agents/session_handoff.md", "memory/changelog.md"],
+      "keywords": ["unfinished", "next", "warnings"]
+    }
+  ]
+}

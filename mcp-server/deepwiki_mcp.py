@@ -100,20 +100,28 @@ def _resolve_project(project: str, min_score: float = 0.72) -> dict:
     projects_dir = Path(VOLUME_BASE) / "projects"
     projects = sorted(p.name for p in projects_dir.iterdir() if p.is_dir()) if projects_dir.exists() else []
     scored = []
+    requested = project.strip()
     for candidate in projects:
         score = max(_project_similarity(project, alias) for alias in _project_aliases(candidate))
-        if _normalize_project_name(project) == _normalize_project_name(candidate):
+        if requested == candidate:
             score = 1.0
         if score >= min_score:
             scored.append({"project": candidate, "score": score})
     scored.sort(key=lambda row: (-row["score"], row["project"]))
-    exact = [row for row in scored if row["score"] == 1.0]
+    exact = [row for row in scored if row["project"] == requested]
     status = "exact" if len(exact) == 1 else "ambiguous" if len(scored) > 1 else "candidate" if scored else "not_found"
     return {"query": project, "status": status, "matches": scored}
 
 
-def _resolved_project(project: str) -> tuple[str, str]:
+def _resolved_project(project: str, *, require_exact: bool = False) -> tuple[str, str]:
     resolution = _resolve_project(project)
+    if require_exact and resolution["status"] != "exact":
+        candidates = ", ".join(f"{m['project']} ({m['score']:.2f})" for m in resolution["matches"][:5])
+        detail = f" Candidates: {candidates}" if candidates else ""
+        raise ValueError(
+            f"Project '{project}' did not resolve exactly (status={resolution['status']})."
+            f"{detail} Call deepwiki_resolve_project and retry with the exact project name."
+        )
     if resolution["matches"]:
         top = resolution["matches"][0]
         warning = ""
@@ -138,12 +146,21 @@ def _section(title: str, values: list[str] | None, checkbox: bool = False) -> li
     return [f"\n#### {title}", *[f"{prefix}{v}" for v in values if v]]
 
 
-def _recent_episodic(root: Path, limit: int = 2) -> dict[str, str]:
+def _tail_text(text: str, max_chars: int = 6000) -> str:
+    if len(text) <= max_chars:
+        return text
+    return "[truncated: showing most recent content]\n" + text[-max_chars:]
+
+
+def _recent_episodic(root: Path, limit: int = 2, max_chars_per_file: int = 6000) -> dict[str, str]:
     episodic_dir = root / "memory" / "episodic"
     if not episodic_dir.exists():
         return {}
     files = sorted(episodic_dir.glob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True)
-    return {f"episodic_{idx + 1}_{path.name}": _safe_read(path) for idx, path in enumerate(files[:limit])}
+    return {
+        f"episodic_{idx + 1}_{path.name}": _tail_text(_safe_read(path), max_chars_per_file)
+        for idx, path in enumerate(files[:limit])
+    }
 
 
 def _append_episodic_event(
@@ -162,7 +179,7 @@ def _append_episodic_event(
     unresolved: list[str] | None = None,
     warnings: list[str] | None = None,
 ) -> tuple[Path, str, str]:
-    resolved, warning = _resolved_project(project)
+    resolved, warning = _resolved_project(project, require_exact=True)
     proj_dir = Path(VOLUME_BASE) / "projects" / resolved
     if not proj_dir.exists():
         raise FileNotFoundError(f"Project '{project}' not found")
@@ -206,7 +223,7 @@ def _append_changelog_entry(
     warnings: list[str] | None = None,
     platform: str = "Genie Code",
 ) -> tuple[Path, str, str]:
-    resolved, warning = _resolved_project(project)
+    resolved, warning = _resolved_project(project, require_exact=True)
     proj_dir = Path(VOLUME_BASE) / "projects" / resolved
     changelog_path = proj_dir / "memory" / "changelog.md"
 
@@ -219,7 +236,8 @@ def _append_changelog_entry(
     entry_lines += [f"- {c}" for c in (changes or ["None"])]
     entry_lines += ["\n### Decisions"] + [f"- {d}" for d in (decisions or ["None"])]
     entry_lines += ["\n### Schema Changes"] + [f"- {s}" for s in (schema_changes or ["None"])]
-    entry_lines += ["\n### Unfinished"] + [f"- [ ] {u}" for u in (unfinished or ["None"])]
+    entry_lines += ["\n### Unfinished"]
+    entry_lines += [f"- [ ] {u}" for u in unfinished] if unfinished else ["- None"]
     entry_lines += ["\n### Warnings for Next Session"] + [f"- {w}" for w in (warnings or ["None"])]
     entry_lines.append("\n---\n")
     entry = "\n".join(entry_lines)
@@ -391,7 +409,7 @@ async def deepwiki_changelog(
             warnings=warnings,
             platform=platform,
         )
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ValueError) as exc:
         return f"ERROR: {exc}"
     return f"{warning}Changelog updated for '{resolved}' at {path.relative_to(Path(VOLUME_BASE) / 'projects' / resolved)}."
 
@@ -431,7 +449,7 @@ async def deepwiki_checkpoint(
             unresolved=unresolved,
             warnings=warnings,
         )
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ValueError) as exc:
         return f"ERROR: {exc}"
     return f"{warning}Episodic event appended for '{resolved}' at {path.relative_to(Path(VOLUME_BASE) / 'projects' / resolved)}."
 
@@ -515,7 +533,7 @@ async def deepwiki_close_session(
             warnings=warnings,
             platform=platform,
         )
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ValueError) as exc:
         return f"ERROR: {exc}"
     root = Path(VOLUME_BASE) / "projects" / resolved
     return (

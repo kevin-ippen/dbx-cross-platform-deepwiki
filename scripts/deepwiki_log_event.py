@@ -110,7 +110,7 @@ def changelog_entry(
         "\n### Schema Changes",
         *(bullet_lines(schema_changes) or ["- None"]),
         "\n### Unfinished",
-        *([f"- [ ] {item}" for item in unfinished if item] or ["- [ ] None"]),
+        *([f"- [ ] {item}" for item in unfinished if item] or ["- None"]),
         "\n### Warnings for Next Session",
         *(bullet_lines(warnings) or ["- None"]),
         "\n---\n",

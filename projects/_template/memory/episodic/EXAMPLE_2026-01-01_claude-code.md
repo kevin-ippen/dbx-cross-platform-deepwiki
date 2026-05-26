@@ -1,38 +1,57 @@
-# 2026-01-01 | Claude Code | Bootstrap — initial schema harvest
+# Episodic Log - 2026-01-01 | Claude Code | Bootstrap schema harvest
 
 > Example episodic log. Delete this file before using the template.
 
-## Task
-Bootstrap the DeepWiki memory system for this project. Populate schemas.md
-from the live catalog and seed the changelog with recent session history.
+## Timeline
 
-## What Was Done
-- Listed all tables in `my_catalog.my_schema` using `databricks tables list`
-- Found 7 tables: events_raw, events_silver, dim_user, dim_product,
-  fact_orders, ml_features, model_predictions
-- Wrote full schema entries for all 7 tables in `memory/semantic/schemas.md`
-- Ran `databricks serving-endpoints list` — found 1 active endpoint:
-  `my-model-v1` (READY)
-- Ran `databricks registered-models list` — 2 registered models:
-  `customer-churn-v1`, `product-rec-v2`
-- Seeded changelog with 3 reconstructed entries from conversation history
+### 09:12:04 - Plan: Bootstrap DeepWiki memory
 
-## What Was Skipped or Deferred
-- Did not run validation (self-validation Prompt 6) — running out of context
-- Did not populate `context/codebase_map.md` — next session task
+#### Objective
+- Populate deterministic project memory from the live catalog and recent session history.
 
-## Raw Observations
-- `dim_product` has a comment in the catalog: "deprecated, use dim_product_v2"
-  → marked deprecated in schemas.md, but dim_product_v2 doesn't exist yet in catalog
-  → this is a discrepancy to watch
-- `ml_features` has 47 columns — summarized as "feature store table, 47 numeric features"
-  rather than listing all of them. Full column list is in the catalog.
+#### Plan
+- Read AGENT_PROTOCOL, gotchas, patterns, goals, phases, and the latest changelog entries.
+- Inspect catalog resources needed for `memory/semantic/schemas.md`.
+- Seed the changelog only after the schema harvest is verified.
 
-## Files Touched
-- `memory/semantic/schemas.md` — created with 7 table entries + 2 models + 1 endpoint
-- `memory/changelog.md` — seeded with 3 reconstructed entries
+### 09:31:22 - Checkpoint: Catalog harvest complete
 
-## Open State
-- `context/codebase_map.md` is empty — needs population next session
-- `dim_product` deprecation status needs resolution — does v2 exist somewhere?
-- Validation step (Prompt 6) not run — do at start of next session
+#### Status
+- Listed all tables in `my_catalog.my_schema`.
+- Found 7 tables: `events_raw`, `events_silver`, `dim_user`, `dim_product`, `fact_orders`, `ml_features`, `model_predictions`.
+- Found 1 active serving endpoint: `my-model-v1` (READY).
+- Found 2 registered models: `customer-churn-v1`, `product-rec-v2`.
+
+#### Files Touched
+- `memory/semantic/schemas.md`
+
+#### Commands / Verification
+- `databricks tables list my_catalog.my_schema`: passed, 7 tables found.
+- `databricks serving-endpoints list`: passed, 1 ready endpoint found.
+- `databricks registered-models list`: passed, 2 models found.
+
+#### Decisions / Rationale
+- Summarized `ml_features` as a feature table instead of listing all 47 numeric feature columns inline.
+
+#### Surprises / Failures
+- `dim_product` is marked deprecated in catalog comments, but `dim_product_v2` was not found.
+
+#### Unresolved / Next
+- [ ] Populate `context/codebase_map.md`.
+- [ ] Resolve whether `dim_product_v2` exists in another schema.
+
+### 10:02:47 - Close: Bootstrap memory seeded
+
+#### Status
+- Wrote schema entries for 7 tables, 2 models, and 1 endpoint.
+- Seeded changelog with reconstructed recent session history.
+
+#### Files Touched
+- `memory/semantic/schemas.md`
+- `memory/changelog.md`
+
+#### Commands / Verification
+- Manual review of `memory/semantic/schemas.md`: passed for discovered resources.
+
+#### Warnings
+- Run the validation prompt at the start of the next session because this bootstrap did not include a full self-validation pass.

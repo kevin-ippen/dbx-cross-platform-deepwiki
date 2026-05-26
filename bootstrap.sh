@@ -112,4 +112,4 @@ done
 echo "  5. Wire up your agent platform (see SETUP.md for Claude Code, Genie, Copilot, Cursor)"
 echo ""
 echo "  Optional: deploy the MCP server for Genie Code integration:"
-echo "    cd mcp-server/ && databricks apps deploy deepwiki-mcp --source-code-path ."
+echo "    cd mcp-server/ && databricks apps deploy mcp-deepwiki --source-code-path ."

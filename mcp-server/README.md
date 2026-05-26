@@ -16,6 +16,8 @@ MCP server that exposes DeepWiki as tools for Genie Code and the Databricks AI A
 | `deepwiki_close_session` | Append final episodic close event and changelog together | `{"project": "my-project", "summary": "finished task", "changes": ["..."]}` |
 | `deepwiki_list` | List files in a project | `{"project": "my-project"}` or `{}` for project index |
 
+Read tools may fuzzy-resolve a project name to help with discovery. Write tools (`deepwiki_checkpoint`, `deepwiki_episodic`, `deepwiki_changelog`, and `deepwiki_close_session`) fail closed unless the supplied project name resolves exactly; call `deepwiki_resolve_project` first and retry with the exact name when a name is approximate.
+
 ## Setup
 
 ### 1. Create a UC Volume for DeepWiki

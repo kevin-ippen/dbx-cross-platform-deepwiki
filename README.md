@@ -100,6 +100,24 @@ The `mcp-server/` directory contains an MCP Python SDK server that exposes DeepW
 
 See [mcp-server/README.md](mcp-server/README.md).
 
+## Memory Evaluation
+
+The `scripts/` directory includes deterministic scorecard tools for checking whether a DeepWiki tree is useful for cold-resume work.
+
+```bash
+python3 scripts/deepwiki_eval.py \
+  --deepwiki-root projects/my-project \
+  --project-root /path/to/my-project \
+  --project my-project
+
+python3 scripts/deepwiki_eval_all.py \
+  --base-dir /path/to/projects \
+  --markdown-out docs/deepwiki-cross-project-scorecard.md \
+  --json-out docs/deepwiki-cross-project-scorecard.json
+```
+
+The evaluator scores retrieval utility, protocol compliance, handoff quality, drift freshness, and efficiency. Pass `--uc-mirror` when you have a mounted UC Volume mirror; otherwise the scorecard reports local freshness only and explicitly flags that remote sync was not evaluated.
+
 ## Philosophy
 
 - **Markdown only.** No databases, no vector stores, no external services required.
