@@ -27,7 +27,7 @@ DeepWiki is that layer. It's a folder of structured Markdown files that any agen
         semantic/       ← compiled facts: schemas, gotchas, patterns
       context/          ← codebase map, DAB manifest
   agents/               ← reusable subagent prompt templates
-  mcp-server/           ← optional FastAPI MCP server for Genie Code
+  mcp-server/           ← optional MCP SDK server for Genie Code
 ```
 
 **Session start ritual** (any platform):
@@ -36,7 +36,7 @@ DeepWiki is that layer. It's a folder of structured Markdown files that any agen
 3. State your plan before acting
 
 **Session end ritual** (any platform):
-1. Write `memory/episodic/YYYY-MM-DD_{platform}.md` — verbose raw log
+1. Append to `memory/episodic/YYYY-MM-DD_{platform}_{slug}.md` throughout the session — plans, status updates, checkpoints, errors, decisions, close
 2. Append to `projects/{name}/memory/changelog.md` — structured summary
 3. If switching platforms, write `agents/session_handoff.md`
 
@@ -69,11 +69,11 @@ The MCP server reads from the volume — no sync scripts needed.
 | **Vision** | `NORTH_STAR.md` | Human only | When the goal changes |
 | **Priorities** | `planning/goals.md`, `planning/phases.md` | Human only | When priorities shift |
 | **Architecture** | `planning/decisions.md` | Agent (human-approved) | When architectural choices are made |
-| **Episodic** | `memory/episodic/{date}_{platform}.md` | Agent (mandatory) | Every session — verbose raw log |
+| **Episodic** | `memory/episodic/{date}_{platform}_{slug}.md` | Agent (mandatory) | Plans, status changes, checkpoints, errors, decisions, close |
 | **Structured log** | `memory/changelog.md` | Agent (mandatory) | Every session — formatted summary for pre-flight reads |
 | **Compiled facts** | `memory/semantic/*.md` | Agent (compilation task) | Every 3-5 sessions or at phase boundaries |
 
-The key insight: episodic logs capture everything cheaply; compilation distills them into dense semantic memory that agents load in pre-flight. Agents read the compiled tier, not the raw logs. This keeps pre-flight token cost low (~3,500 tokens) while keeping the full history available for compilation and auditing.
+The key insight: episodic logs act as a flight recorder for interrupted work; compilation distills them into dense semantic memory. Agents read recent episodic logs for recovery and compiled semantic memory for durable facts.
 
 ## Getting started
 
@@ -96,7 +96,7 @@ See [BOOTSTRAP.md](BOOTSTRAP.md) for the 7-prompt sequence to populate your firs
 
 ## MCP server (for Genie Code)
 
-The `mcp-server/` directory contains a FastAPI server that exposes DeepWiki as MCP tools. Deploy it as a Databricks App and register it with Genie Code — then Genie can call `deepwiki_preflight("my-project")` to load all session context in a single tool call.
+The `mcp-server/` directory contains an MCP Python SDK server that exposes DeepWiki as tools. Deploy it as a Databricks App and register it with Genie Code — then Genie can call `deepwiki_preflight("my-project")` to load all session context in a single tool call.
 
 See [mcp-server/README.md](mcp-server/README.md).
 

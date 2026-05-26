@@ -18,8 +18,8 @@ Read every file in .deepwiki/ — start with AGENT_PROTOCOL.md, then NORTH_STAR.
 then planning/goals.md and phases.md.
 
 From this point forward, every session (including this one) follows the Agent Protocol.
-You will read before acting, connect work to goals, and write a changelog entry
-and an episodic log before we end.
+You will read before acting, connect work to goals, append episodic plan/status/checkpoint
+events during work, and write a changelog entry plus final episodic close before we end.
 
 Confirm you've read and understood the protocol, then tell me:
 1. What is this project's north star?
@@ -225,7 +225,7 @@ We're ending this session. Follow the session close protocol:
 1. Append a changelog entry to memory/changelog.md for this bootstrap session.
    Document what we built, what we populated, and any issues found in validation.
 
-2. Write an episodic log to memory/episodic/YYYY-MM-DD_{platform}.md.
+2. Write a final episodic close event to memory/episodic/YYYY-MM-DD_{platform}_{slug}.md.
    Include more detail than the changelog: what you tried, what surprised you,
    what's still uncertain.
 
@@ -257,7 +257,8 @@ without you explaining anything — the bootstrap worked.
 
 | When | What to Do |
 |------|-----------|
-| Every session end | Append to `changelog.md` + write episodic log |
+| During every session | Append episodic plan/status/checkpoint events |
+| Every session end | Append final episodic close + append to `changelog.md` |
 | Every 3-5 sessions | Ask agent to compile episodic logs → semantic memory |
 | At phase boundaries | Compile, then update `goals.md` and `phases.md` |
 | When a gotcha appears in 2+ projects | Promote to `workspace/memory/semantic/gotchas.md` |

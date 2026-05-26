@@ -6,10 +6,14 @@ MCP server that exposes DeepWiki as tools for Genie Code and the Databricks AI A
 
 | Tool | Purpose | Example |
 |------|---------|---------|
-| `deepwiki_preflight` | Load all session context for a project in one call | `{"project": "my-project"}` |
+| `deepwiki_preflight` | Load session context for a project, including recent episodic logs | `{"project": "my-project"}` |
+| `deepwiki_resolve_project` | Fuzzy-resolve project names before creating/selecting memory | `{"project": "my proj"}` |
 | `deepwiki_read` | Read a specific file | `{"project": "my-project", "file": "memory/semantic/schemas.md"}` |
 | `deepwiki_search` | Full-text search across all files | `{"query": "price model"}` |
+| `deepwiki_checkpoint` | Append an in-flight episodic event | `{"project": "my-project", "summary": "validated schema", "status": ["DESCRIBE matched"]}` |
+| `deepwiki_episodic` | Alias for appending an episodic event | `{"project": "my-project", "summary": "plan revised", "event_type": "Plan"}` |
 | `deepwiki_changelog` | Append a formatted changelog entry | `{"project": "my-project", "changes": ["Added table X"]}` |
+| `deepwiki_close_session` | Append final episodic close event and changelog together | `{"project": "my-project", "summary": "finished task", "changes": ["..."]}` |
 | `deepwiki_list` | List files in a project | `{"project": "my-project"}` or `{}` for project index |
 
 ## Setup
@@ -79,7 +83,7 @@ Once registered, Genie can call these tools naturally:
 ```
 User: "Start a new session on my-project"
 Genie: [calls deepwiki_preflight(project="my-project")]
-       → Returns protocol + gotchas + schemas + recent changelog
+       → Returns protocol + gotchas + schemas + recent changelog + recent episodic logs
 ```
 
 ```

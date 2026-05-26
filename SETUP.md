@@ -88,8 +88,9 @@ Add to your `CLAUDE.md` (project or global):
 ## DeepWiki Memory
 
 At session start: Read `.deepwiki/workspace/AGENT_PROTOCOL.md` and follow the pre-flight checklist.
+During work: append plan/status/checkpoint events to `projects/{project-name}/memory/episodic/YYYY-MM-DD_claude-code_{slug}.md`.
 At session end:
-1. Write a verbose episodic log to `projects/{project-name}/memory/episodic/YYYY-MM-DD_claude-code.md`
+1. Append a final episodic close event
 2. Append a structured entry to `projects/{project-name}/memory/changelog.md`
 ```
 
@@ -113,8 +114,10 @@ Add to `.cursorrules`:
 ```
 At session start: Read .deepwiki/workspace/AGENT_PROTOCOL.md and follow the pre-flight checklist.
 Before touching any schema: check .deepwiki/projects/{name}/memory/semantic/schemas.md.
+During work:
+- Append plan/status/checkpoint events to .deepwiki/projects/{name}/memory/episodic/YYYY-MM-DD_cursor_{slug}.md
 At session end:
-- Write a verbose episodic log to .deepwiki/projects/{name}/memory/episodic/YYYY-MM-DD_cursor.md
+- Append a final episodic close event
 - Append a structured entry to .deepwiki/projects/{name}/memory/changelog.md
 ```
 

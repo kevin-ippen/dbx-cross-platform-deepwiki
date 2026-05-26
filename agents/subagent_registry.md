@@ -29,10 +29,10 @@
 - **Template:** `delegation_templates/code_reviewer.md`
 
 ## memory_compiler
-- **Purpose:** Compile episodic changelog entries into updated semantic memory files
+- **Purpose:** Compile episodic flight-recorder logs and changelog entries into updated semantic memory files
 - **Model Tier:** Mid
-- **Memory Slice:** All `memory/changelog.md` entries in date range + current `memory/semantic/*.md` files
-- **Input:** Changelog entries + current semantic files
+- **Memory Slice:** All `memory/episodic/` and `memory/changelog.md` entries in date range + current `memory/semantic/*.md` files
+- **Input:** Episodic logs + changelog entries + current semantic files
 - **Output Format:** Updated semantic memory files (schemas, patterns, gotchas, glossary)
 - **Template:** `delegation_templates/memory_compiler.md`
 - **When to Run:** Every 3-5 sessions, after schema changes, before phase boundaries

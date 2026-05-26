@@ -7,6 +7,8 @@
 ## Pre-Flight Checklist
 
 ### 1. Determine Scope
+- **Before creating a new project memory folder or assuming a project path**, fuzzy-resolve the requested name against existing project names and aliases. Prefer the closest existing project when intent is clear; ask before creating a near-duplicate.
+  - MCP helper: call `deepwiki_resolve_project(project="<project name or alias>")` when available.
 - **Single project?** → Read that project's `.deepwiki/AGENT_PROTOCOL.md` if it exists; otherwise follow this file
 - **Cross-project or workspace-wide?** → Follow this file's full checklist
 - **New project?** → Read `PROJECT_INDEX.md` to understand the landscape first
@@ -33,6 +35,7 @@ Also load that project's `.deepwiki/` memory:
 - `planning/goals.md` — the what (current priorities)
 - `planning/phases.md` — the when (execution order)
 - Last 3 entries in `memory/changelog.md`
+- Most recent 1-2 files in `memory/episodic/` (recover in-flight work)
 - `memory/semantic/schemas.md` — current schema state
 - `memory/semantic/gotchas.md` — project-specific pitfalls
 
@@ -45,17 +48,20 @@ Before writing any code or making any changes, state:
 
 **If you cannot connect your planned work to an active goal → STOP and ask.**
 
+Append this plan to the current episodic log before or immediately after acting.
+
 ### 6. During Execution
 - If you encounter a schema change: update `schemas.md` immediately, not later
 - If you hit a surprising failure: note it for `gotchas.md`
 - If your approach diverges from the plan stated in step 5: pause and explain why
 - Periodically re-check: "Is what I'm doing still serving the active goal?"
+- Append a compact episodic event whenever you revise the plan, complete a meaningful step, start a long-running job, choose an error-recovery path, discover a durable fact, or risk interruption.
 
 ### 7. Session Close (Before Ending)
 Write two artifacts before ending:
 
-**A. Episodic log** — `projects/{project-name}/memory/episodic/YYYY-MM-DD_{platform}.md`
-Verbose, unedited. What you tried, what surprised you, what's uncertain.
+**A. Episodic log** — `projects/{project-name}/memory/episodic/YYYY-MM-DD_{platform}_{slug}.md`
+Flight recorder. Plans, status updates, checkpoints, errors, decisions, close events, and uncertainty.
 See `projects/_template/memory/episodic/README.md` for format.
 
 **B. Changelog entry** — append to `projects/{project-name}/memory/changelog.md`
@@ -91,11 +97,11 @@ If switching platforms next session, also write `agents/session_handoff.md`.
 | `NORTH_STAR.md` | Human only | When vision changes |
 | `goals.md`, `phases.md` | Human only | When priorities shift |
 | `decisions.md` | Agent (with human approval) | When architectural choices are made |
-| `episodic/{date}_{platform}.md` | Agent (mandatory) | Every session — raw verbose log |
+| `episodic/{date}_{platform}_{slug}.md` | Agent (mandatory flight recorder) | Plans, status changes, checkpoints, errors, decisions, close |
 | `changelog.md` | Agent (mandatory) | Every session — structured summary |
 | `semantic/*.md` | Agent (compilation task) | Every 3-5 sessions or at phase boundaries |
 
-**Episodic vs. changelog:** Write both at session end. The episodic log is verbose and unedited — the full record of what was tried and what was observed. The changelog entry is the structured summary that future agents read during pre-flight. Episodic logs are the source material for semantic memory compilation; they are never loaded during pre-flight.
+**Episodic vs. changelog:** Write episodic events throughout the session and a final close event at session end. The changelog entry is the structured summary. Future agents read recent episodic logs during pre-flight to recover interrupted work, then rely on semantic memory for durable facts.
 
 ## Subagent Rules
 

@@ -1,56 +1,54 @@
 # Episodic Memory
 
 > Raw session logs — the source material that gets compiled into semantic memory.
-> One file per session, named `YYYY-MM-DD_{platform}.md`.
-> Never edit these after writing them. They are the immutable record.
+> One file per session or task thread, named `YYYY-MM-DD_{platform}_{slug}.md`.
+> Append throughout the session. Treat it as a flight recorder for interruption recovery.
 
 ## File Naming
 
 ```
-2026-05-08_claude-code.md
-2026-05-09_genie-code.md
-2026-05-10_codex.md
+2026-05-08_claude-code_streaming-investigation.md
+2026-05-09_genie-code_schema-validation.md
+2026-05-10_codex_flight-recorder-rollout.md
 ```
 
 ## What Goes Here vs. changelog.md
 
 | changelog.md | episodic/{date}_{platform}.md |
 |---|---|
-| Structured, formatted summary | Raw, verbose session log |
-| Every agent reads this | Feeds into compilation only |
+| Structured, formatted summary | In-flight plan/status/checkpoint log |
+| Every agent reads this | Recent 1-2 files read during pre-flight; older files feed compilation |
 | Stays small (last N entries) | Accumulates; archive after 30 days |
 | The "what changed" story | The "how we got there" record |
 
 `changelog.md` is your fast-path read. Episodic logs are the audit trail.
 If changelog.md ever needs correction, the episodic log is the source of truth.
 
-## Entry Format
+## Event Format
 
 ```markdown
-# YYYY-MM-DD | {Platform} | {Brief title}
+# Episodic Log - YYYY-MM-DD | {Platform} | {Brief title}
 
-## Task
-What the session was trying to accomplish.
+## Timeline
 
-## What Was Done
-- Step-by-step: what was attempted, what worked, what was changed
-- Include specific file paths, table names, function names
+### HH:MM:SS - Plan: {Brief summary}
 
-## What Was Skipped or Deferred
-- What you started but didn't finish and why
+#### Objective
+- What the session is trying to accomplish
 
-## Raw Observations
-- Unexpected behavior encountered
-- Things that worked surprisingly well or badly
-- Dead ends worth noting so you don't retread them
-- Any uncertainty about whether a step worked correctly
+#### Plan
+- Immediate steps
 
-## Files Touched
-- path/to/file.py — what changed
-- another/file.sql — what changed
+### HH:MM:SS - Checkpoint: {Brief summary}
 
-## Open State
-- What's mid-flight that the next agent needs to know
+#### Status
+- What changed or what is in progress
+
+#### Commands / Verification
+- `command`: result
+
+#### Unresolved / Next
+- [ ] Immediate next step
 ```
 
 ## Archival
