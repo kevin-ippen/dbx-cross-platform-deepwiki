@@ -8,6 +8,8 @@ Multi-agent, multi-platform projects fail because agents start cold. They re-ask
 
 DeepWiki is that layer. It's a folder of structured Markdown files that any agent can read, and a lightweight protocol that tells agents what to read, when to write, and how to hand off between sessions and platforms.
 
+The portable contract lives in [CORE_PROTOCOL.md](CORE_PROTOCOL.md). It is deliberately model-agnostic and harness-agnostic: a model can comply through direct file reads/writes, CLI scripts, MCP tools, IDE hooks, or any future agent runtime.
+
 ## How it works
 
 ```
@@ -31,14 +33,17 @@ DeepWiki is that layer. It's a folder of structured Markdown files that any agen
 ```
 
 **Session start ritual** (any platform):
-1. Read `workspace/AGENT_PROTOCOL.md` — it tells you exactly what else to read
-2. Load the project slice relevant to your task
-3. State your plan before acting
+1. Resolve the project name against existing project folders before creating or writing memory
+2. Read `workspace/AGENT_PROTOCOL.md` — it tells you exactly what else to read
+3. Load the project slice relevant to your task, including bounded recent episodic tails
+4. State your phase/goal, plan, regression risk, and scope before acting
 
 **Session end ritual** (any platform):
 1. Append to `memory/episodic/YYYY-MM-DD_{platform}_{slug}.md` throughout the session — plans, status updates, checkpoints, errors, decisions, close
 2. Append to `projects/{name}/memory/changelog.md` — structured summary
 3. If switching platforms, write `agents/session_handoff.md`
+
+**Write-safety rule:** fuzzy names are for discovery. Writes must target an exact canonical `projects/{name}/` directory, so `lake find` can resolve to `lakefind`, but the write is retried as `lakefind`.
 
 ## Platform integration
 
@@ -49,6 +54,8 @@ DeepWiki is that layer. It's a folder of structured Markdown files that any agen
 | **GitHub Copilot** | Add `#file:.deepwiki/workspace/AGENT_PROTOCOL.md` to `.github/copilot-instructions.md` |
 | **Cursor** | Reference `AGENT_PROTOCOL.md` in `.cursorrules` |
 | **Custom agents** | Include `AGENT_PROTOCOL.md` in the system prompt; inject project slices as context |
+
+For a model/harness-neutral prompt, use [agents/core_agent_instructions.md](agents/core_agent_instructions.md).
 
 ### UC Volume sync (Databricks)
 
@@ -117,6 +124,8 @@ python3 scripts/deepwiki_eval_all.py \
 ```
 
 The evaluator scores retrieval utility, protocol compliance, handoff quality, drift freshness, and efficiency. Pass `--uc-mirror` when you have a mounted UC Volume mirror; otherwise the scorecard reports local freshness only and explicitly flags that remote sync was not evaluated.
+
+Scorecards are intentionally conservative: partial missing expected files are penalized, recent episodic logs must contain Plan/Checkpoint/Close events, handoff scores below target are surfaced as findings, and skipped UC mirror checks are not treated as proof of sync.
 
 ## Philosophy
 

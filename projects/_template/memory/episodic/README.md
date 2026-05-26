@@ -51,6 +51,13 @@ If changelog.md ever needs correction, the episodic log is the source of truth.
 - [ ] Immediate next step
 ```
 
+Expected recent-session coverage:
+
+- At least one `Plan` event near the start.
+- At least one `Checkpoint` event for meaningful progress or verification.
+- One final `Close` event before the changelog entry.
+- Enough structured sections for another agent to resume without asking what happened.
+
 ## Archival
 
 After 30 days, move to `episodic/archive/`. Semantic memory compiled from

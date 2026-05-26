@@ -3,6 +3,8 @@
 This is a prompt sequence to paste into your agent (Claude Code, Genie Code, or Codex) in order.
 Run them once when setting up a new project. After bootstrap, normal sessions follow `AGENT_PROTOCOL.md`.
 
+The sequence is model/harness agnostic. If your agent has MCP tools, it may use them; if not, it should read and write the Markdown files directly. `CORE_PROTOCOL.md` defines the portable behavior.
+
 **Prerequisites before starting:**
 - You've run `bootstrap.sh` to scaffold the directory structure
 - You've filled in `NORTH_STAR.md`, `planning/goals.md`, and `planning/phases.md` by hand (these are human-owned)
@@ -14,12 +16,13 @@ Run them once when setting up a new project. After bootstrap, normal sessions fo
 
 ```
 Before we begin any work, I need you to understand a new system we're implementing.
-Read every file in .deepwiki/ — start with AGENT_PROTOCOL.md, then NORTH_STAR.md,
-then planning/goals.md and phases.md.
+Read CORE_PROTOCOL.md if present, then .deepwiki/workspace/AGENT_PROTOCOL.md,
+then this project's AGENT_PROTOCOL.md, NORTH_STAR.md, planning/goals.md, and phases.md.
 
 From this point forward, every session (including this one) follows the Agent Protocol.
 You will read before acting, connect work to goals, append episodic plan/status/checkpoint
 events during work, and write a changelog entry plus final episodic close before we end.
+Before writing memory, resolve project identity against existing project folders and write only to the exact canonical project name.
 
 Confirm you've read and understood the protocol, then tell me:
 1. What is this project's north star?
@@ -215,6 +218,28 @@ Final bootstrap step. Validate the memory system against itself.
 Report results and fix any issues found.
 ```
 
+## Prompt 6B — Scorecard Evaluation
+
+```
+Run the deterministic DeepWiki scorecard for this project.
+
+Use scripts/deepwiki_eval.py if available:
+
+python3 scripts/deepwiki_eval.py \
+  --deepwiki-root .deepwiki/projects/{project-name} \
+  --project-root /path/to/project \
+  --project {project-name}
+
+Report:
+1. Overall score and dimension scores
+2. Any low handoff, missing event-type, or retrieval findings
+3. Whether remote mirror freshness was evaluated or explicitly not evaluated
+4. What must be remediated before sharing this memory system with another agent
+
+If the script is not available, do a manual equivalent against the required files,
+recent episodic events, changelog sections, and remote mirror status.
+```
+
 ---
 
 ## Prompt 7 — Close the Bootstrap Session
@@ -234,6 +259,9 @@ We're ending this session. Follow the session close protocol:
 4. Write a session handoff note at agents/session_handoff.md summarizing
    current project state and what the next session should focus on
    (based on goals.md and phases.md).
+
+5. If this project syncs to shared storage, sync it now and explicitly state
+   whether sync succeeded or was not evaluated.
 ```
 
 ---
@@ -259,6 +287,7 @@ without you explaining anything — the bootstrap worked.
 |------|-----------|
 | During every session | Append episodic plan/status/checkpoint events |
 | Every session end | Append final episodic close + append to `changelog.md` |
+| After memory-system changes | Run scorecard evaluation and report residual risks |
 | Every 3-5 sessions | Ask agent to compile episodic logs → semantic memory |
 | At phase boundaries | Compile, then update `goals.md` and `phases.md` |
 | When a gotcha appears in 2+ projects | Promote to `workspace/memory/semantic/gotchas.md` |

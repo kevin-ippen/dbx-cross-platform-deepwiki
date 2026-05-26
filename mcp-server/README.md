@@ -6,7 +6,7 @@ MCP server that exposes DeepWiki as tools for Genie Code and the Databricks AI A
 
 | Tool | Purpose | Example |
 |------|---------|---------|
-| `deepwiki_preflight` | Load session context for a project, including recent episodic logs | `{"project": "my-project"}` |
+| `deepwiki_preflight` | Load session context for a project, including bounded recent episodic excerpts | `{"project": "my-project"}` |
 | `deepwiki_resolve_project` | Fuzzy-resolve project names before creating/selecting memory | `{"project": "my proj"}` |
 | `deepwiki_read` | Read a specific file | `{"project": "my-project", "file": "memory/semantic/schemas.md"}` |
 | `deepwiki_search` | Full-text search across all files | `{"query": "price model"}` |
@@ -85,7 +85,7 @@ Once registered, Genie can call these tools naturally:
 ```
 User: "Start a new session on my-project"
 Genie: [calls deepwiki_preflight(project="my-project")]
-       → Returns protocol + gotchas + schemas + recent changelog + recent episodic logs
+       → Returns protocol + gotchas + schemas + recent changelog + bounded recent episodic excerpts
 ```
 
 ```

@@ -265,7 +265,7 @@ async def deepwiki_preflight(project: str) -> str:
     """Load all pre-flight context for a project in one call.
 
     Returns: AGENT_PROTOCOL + workspace gotchas + workspace patterns +
-    project changelog (last 3 entries) + recent episodic logs + project schemas
+    project changelog (last 3 entries) + bounded recent episodic excerpts + project schemas
     + project gotchas + north star + current goals. Call this at the start of every session.
     """
     sections: dict[str, str] = {}

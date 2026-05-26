@@ -9,9 +9,11 @@
 
 This workspace uses a structured memory system stored in a UC Volume. It persists across sessions and platforms — Claude Code, Genie Code, and custom agents all share the same store.
 
-**At session start:** Call `deepwiki_resolve_project(project="{project-name}")` if the name may be approximate, then call `deepwiki_preflight(project="{resolved-project}")` to load all context in one call. It returns: the agent protocol, workspace gotchas, project changelog (last 3 entries), recent episodic logs, project schemas, and project goals.
+**At session start:** Call `deepwiki_resolve_project(project="{project-name}")` if the name may be approximate, then call `deepwiki_preflight(project="{resolved-project}")` to load all context in one call. It returns: the agent protocol, workspace gotchas, project changelog (last 3 entries), recent bounded episodic log excerpts, project schemas, and project goals.
 
 **During work:** Call `deepwiki_checkpoint` or `deepwiki_episodic` after stating a plan, changing a plan, completing a meaningful step, starting a long-running job, choosing an error path, or discovering a durable fact.
+
+**Write safety:** Discovery tools may fuzzy-resolve project names. Write tools must use the exact canonical project name returned by resolution; if resolution is ambiguous, ask instead of writing.
 
 **At session end:** If you changed anything (code, schema, approach), call `deepwiki_close_session` to write a final episodic close event and changelog entry together.
 

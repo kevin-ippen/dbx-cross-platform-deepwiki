@@ -24,6 +24,12 @@
 - 
 - 
 
+## Latest Episodic Checkpoint
+
+*(Link or paste the latest Plan/Checkpoint/Close event that explains current state.)*
+
+-
+
 ## What to Do Next
 
 1. 
@@ -35,6 +41,13 @@
 *(Things that will break if the next agent isn't careful.)*
 
 - 
+
+## Verification Status
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Tests / build / eval | Not run | |
+| Remote mirror sync | Not evaluated | |
 
 ## Files Modified This Session
 

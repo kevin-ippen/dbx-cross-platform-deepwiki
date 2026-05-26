@@ -3,12 +3,23 @@
 > This file is MANDATORY reading for any agent session in this workspace.
 > It SUPERSEDES project-level AGENT_PROTOCOL.md for cross-project rules.
 > Platform-agnostic: works for Genie Code, Claude Code, Copilot, Codex, or any future agent.
+> `CORE_PROTOCOL.md` is the model/harness-neutral contract; this file is the workspace-specific implementation.
+
+## Core Operating Invariants
+
+- Fuzzy project matching is for discovery and duplicate prevention. Any memory write must target the exact canonical `projects/{name}/` directory.
+- Read bounded preflight context before acting: never load unlimited episodic history into the active context.
+- Record in-flight Plan, Checkpoint, verification, recovery, and Close events so an interrupted session can be reconstructed.
+- Keep raw episodic memory, structured changelog, and compiled semantic memory distinct.
+- Treat unevaluated remote sync, unvalidated hooks, and missing behavioral cold-resume tests as residual risk, not as success.
 
 ## Pre-Flight Checklist
 
 ### 1. Determine Scope
 - **Before creating a new project memory folder or assuming a project path**, fuzzy-resolve the requested name against existing project names and aliases. Prefer the closest existing project when intent is clear; ask before creating a near-duplicate.
   - MCP helper: call `deepwiki_resolve_project(project="<project name or alias>")` when available.
+  - CLI helper: run `python3 scripts/deepwiki_resolve_project.py "<project name or alias>"` when available.
+  - Write rule: retry writes with the exact project directory name returned by resolution.
 - **Single project?** → Read that project's `.deepwiki/AGENT_PROTOCOL.md` if it exists; otherwise follow this file
 - **Cross-project or workspace-wide?** → Follow this file's full checklist
 - **New project?** → Read `PROJECT_INDEX.md` to understand the landscape first
@@ -35,7 +46,7 @@ Also load that project's `.deepwiki/` memory:
 - `planning/goals.md` — the what (current priorities)
 - `planning/phases.md` — the when (execution order)
 - Last 3 entries in `memory/changelog.md`
-- Most recent 1-2 files in `memory/episodic/` (recover in-flight work)
+- Most recent 1-2 tails/capped excerpts in `memory/episodic/` (recover in-flight work without flooding context)
 - `memory/semantic/schemas.md` — current schema state
 - `memory/semantic/gotchas.md` — project-specific pitfalls
 
@@ -55,7 +66,7 @@ Append this plan to the current episodic log before or immediately after acting.
 - If you hit a surprising failure: note it for `gotchas.md`
 - If your approach diverges from the plan stated in step 5: pause and explain why
 - Periodically re-check: "Is what I'm doing still serving the active goal?"
-- Append a compact episodic event whenever you revise the plan, complete a meaningful step, start a long-running job, choose an error-recovery path, discover a durable fact, or risk interruption.
+- Append a compact episodic event whenever you revise the plan, complete a meaningful step, start a long-running job, choose an error-recovery path, discover a durable fact, run verification, or risk interruption.
 
 ### 7. Session Close (Before Ending)
 Write two artifacts before ending:
@@ -86,7 +97,20 @@ Structured summary using this format:
 - Things the next agent MUST know to avoid breaking something
 ```
 
+If there is no unfinished work, write `- None` under `### Unfinished`; do not write `- [ ] None`.
+
 If switching platforms next session, also write `agents/session_handoff.md`.
+
+### 8. Evaluation (When Memory System Changes)
+
+Run deterministic scorecards after changing protocols, templates, harness tools, project rollout memory, or evaluation logic:
+
+```bash
+python3 scripts/deepwiki_eval.py --deepwiki-root projects/{project-name} --project-root /path/to/project --project {project-name}
+python3 scripts/deepwiki_eval_all.py --base-dir /path/to/projects
+```
+
+Call out low handoff scores, missing Plan/Checkpoint/Close event types, stale schemas, and skipped UC/remote mirror checks. A local freshness score is not proof that shared storage is current.
 
 ---
 

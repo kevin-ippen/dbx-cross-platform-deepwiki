@@ -4,6 +4,8 @@
 
 A `.deepwiki/` folder in your workspace that persists agent memory across sessions and platforms. Any agent — Claude Code, Genie Code, Copilot, Cursor — reads the same files and follows the same protocol.
 
+Start with the model/harness-neutral contract in `CORE_PROTOCOL.md`. Platform setup below only changes how the agent reads/writes the same memory files.
+
 ## Option A: Local only (Claude Code / Copilot / Cursor)
 
 No Databricks required. The `.deepwiki/` folder lives alongside your project files.
@@ -80,6 +82,8 @@ If you've deployed the MCP server, Claude Code can also call it via MCP instead 
 
 ## Platform Instructions
 
+For any platform not listed here, paste `agents/core_agent_instructions.md` into the harness instructions and ensure the harness can read/write `.deepwiki/`.
+
 ### Claude Code
 
 Add to your `CLAUDE.md` (project or global):
@@ -88,6 +92,7 @@ Add to your `CLAUDE.md` (project or global):
 ## DeepWiki Memory
 
 At session start: Read `.deepwiki/workspace/AGENT_PROTOCOL.md` and follow the pre-flight checklist.
+Before creating or writing project memory: resolve approximate project names against existing project folders and write only to the exact canonical project name.
 During work: append plan/status/checkpoint events to `projects/{project-name}/memory/episodic/YYYY-MM-DD_claude-code_{slug}.md`.
 At session end:
 1. Append a final episodic close event
@@ -105,6 +110,7 @@ Add to `.github/copilot-instructions.md`:
 ```markdown
 At session start, read `.deepwiki/workspace/AGENT_PROTOCOL.md`.
 Follow the pre-flight checklist before making any code changes.
+Resolve project names before writing memory, and log Plan/Checkpoint/Close episodic events.
 ```
 
 ### Cursor
@@ -124,6 +130,8 @@ At session end:
 ### Custom Agents
 
 Include `AGENT_PROTOCOL.md` in the system prompt. For each task, inject the relevant project slice (schemas, gotchas, changelog) as user context.
+
+Minimum behavior: exact project writes, bounded preflight, in-flight Plan/Checkpoint/Close logs, changelog closeout, and scorecard evaluation after memory-system changes.
 
 ## File Ownership
 
@@ -147,3 +155,10 @@ Include `AGENT_PROTOCOL.md` in the system prompt. For each task, inject the rele
 
 **When a gotcha should be promoted to workspace level:** Ask your agent:
 > "This gotcha appears in both project-a and project-b. Promote it to `workspace/memory/semantic/gotchas.md`."
+
+**After protocol/template/harness changes:** Run:
+
+```bash
+python3 scripts/deepwiki_eval.py --deepwiki-root projects/{project-name} --project-root /path/to/project --project {project-name}
+python3 scripts/deepwiki_eval_all.py --base-dir /path/to/projects
+```
